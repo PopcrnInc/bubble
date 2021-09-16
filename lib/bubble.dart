@@ -18,6 +18,10 @@ enum BubbleNip {
   rightTop,
   rightCenter,
   rightBottom,
+  bottomRight,
+  bottomLeft,
+  topRight,
+  topLeft,
 }
 
 class Bubble extends StatelessWidget {
@@ -31,6 +35,7 @@ class Bubble extends StatelessWidget {
     double? nipHeight,
     double? nipOffset,
     double? nipRadius,
+    double? nipTopShift,
     bool? stick,
     Color? color,
     Color? borderColor,
@@ -63,6 +68,7 @@ class Bubble extends StatelessWidget {
           nipHeight: nipHeight ?? style?.nipHeight ?? 10,
           nipOffset: nipOffset ?? style?.nipOffset ?? 0,
           nipRadius: nipRadius ?? style?.nipRadius ?? 1,
+          nipTopShift: nipTopShift ?? 5,
           stick: stick ?? style?.stick ?? false,
           padding: EdgeInsets.only(
             left: padding?.left ?? style?.padding?.left ?? 8,

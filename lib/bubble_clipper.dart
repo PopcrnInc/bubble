@@ -9,6 +9,7 @@ class BubbleClipper extends CustomClipper<Path> {
     required this.nipHeight,
     required this.nipOffset,
     required this.nipRadius,
+    required this.nipTopShift,
     required this.stick,
     required this.padding,
   })   : assert(nipWidth > 0),
@@ -20,8 +21,7 @@ class BubbleClipper extends CustomClipper<Path> {
 
     _startOffset = _endOffset = nipWidth;
 
-    final isCenter =
-        nip == BubbleNip.leftCenter || nip == BubbleNip.rightCenter;
+    final isCenter = nip == BubbleNip.leftCenter || nip == BubbleNip.rightCenter;
     final k = isCenter ? nipHeight / 2 / nipWidth : nipHeight / nipWidth;
     final a = atan(k);
 
@@ -47,6 +47,7 @@ class BubbleClipper extends CustomClipper<Path> {
   final double nipWidth;
   final double nipOffset;
   final double nipRadius;
+  final double nipTopShift;
   final bool stick;
   final EdgeInsets padding;
 
@@ -71,6 +72,22 @@ class BubbleClipper extends CustomClipper<Path> {
       case BubbleNip.rightTop:
       case BubbleNip.rightBottom:
       case BubbleNip.rightCenter:
+        return EdgeInsets.only(
+            left: _endOffset + padding.left,
+            top: padding.top,
+            right: _startOffset + padding.right,
+            bottom: padding.bottom);
+
+      case BubbleNip.bottomLeft:
+      case BubbleNip.bottomRight:
+        return EdgeInsets.only(
+            left: _endOffset + padding.left,
+            top: padding.top,
+            right: _startOffset + padding.right,
+            bottom: padding.bottom);
+
+      case BubbleNip.topRight:
+      case BubbleNip.topLeft:
         return EdgeInsets.only(
             left: _endOffset + padding.left,
             top: padding.top,
@@ -108,20 +125,24 @@ class BubbleClipper extends CustomClipper<Path> {
       case BubbleNip.leftTop:
       case BubbleNip.leftBottom:
       case BubbleNip.leftCenter:
-        path.addRRect(RRect.fromLTRBR(
-            _startOffset, 0, size.width - _endOffset, size.height, radius));
+        path.addRRect(RRect.fromLTRBR(_startOffset, 0, size.width - _endOffset, size.height, radius));
         break;
 
       case BubbleNip.rightTop:
       case BubbleNip.rightBottom:
       case BubbleNip.rightCenter:
-        path.addRRect(RRect.fromLTRBR(
-            _endOffset, 0, size.width - _startOffset, size.height, radius));
+        path.addRRect(RRect.fromLTRBR(_endOffset, 0, size.width - _startOffset, size.height, radius));
+        break;
+
+      case BubbleNip.bottomRight:
+      case BubbleNip.bottomLeft:
+      case BubbleNip.topRight:
+      case BubbleNip.topLeft:
+        path.addRRect(RRect.fromLTRBR(_endOffset, 0, size.width - _startOffset, size.height, radius));
         break;
 
       default:
-        path.addRRect(RRect.fromLTRBR(
-            _endOffset, 0, size.width - _endOffset, size.height, radius));
+        path.addRRect(RRect.fromLTRBR(_endOffset, 0, size.width - _endOffset, size.height, radius));
     }
 
     if (showNip) {
@@ -175,8 +196,7 @@ class BubbleClipper extends CustomClipper<Path> {
         case BubbleNip.leftBottom:
           final path2 = Path()
             ..moveTo(_startOffset + radiusX, size.height - nipOffset)
-            ..lineTo(
-                _startOffset + radiusX, size.height - nipOffset - nipHeight)
+            ..lineTo(_startOffset + radiusX, size.height - nipOffset - nipHeight)
             ..lineTo(_startOffset, size.height - nipOffset - nipHeight);
 
           if (nipRadius == 0) {
@@ -245,12 +265,9 @@ class BubbleClipper extends CustomClipper<Path> {
 
         case BubbleNip.rightBottom:
           final path2 = Path()
-            ..moveTo(
-                size.width - _startOffset - radiusX, size.height - nipOffset)
-            ..lineTo(size.width - _startOffset - radiusX,
-                size.height - nipOffset - nipHeight)
-            ..lineTo(
-                size.width - _startOffset, size.height - nipOffset - nipHeight);
+            ..moveTo(size.width - _startOffset - radiusX, size.height - nipOffset)
+            ..lineTo(size.width - _startOffset - radiusX, size.height - nipOffset - nipHeight)
+            ..lineTo(size.width - _startOffset, size.height - nipOffset - nipHeight);
 
           if (nipRadius == 0) {
             path2.lineTo(size.width, size.height - nipOffset);
@@ -262,6 +279,50 @@ class BubbleClipper extends CustomClipper<Path> {
                 radius: Radius.circular(nipRadius),
               );
           }
+
+          path2.close();
+          path = Path.combine(PathOperation.union, path, path2);
+          break;
+
+        case BubbleNip.bottomRight:
+          final path2 = Path()
+            ..moveTo(size.width - _startOffset - radiusX - nipOffset - nipWidth, size.height)
+            ..lineTo(size.width - _startOffset - radiusX - nipOffset, size.height)
+            ..lineTo(size.width - _startOffset - radiusX - nipOffset - nipTopShift, size.height + nipHeight)
+            ..moveTo(size.width - _startOffset - radiusX - nipOffset - nipWidth, size.height);
+
+          // if (nipRadius == 0) {
+          //   path2.lineTo(size.width, size.height + 80);
+          // } else {
+          //   path2
+          //     .lineTo(size.width - _nipPX, size.height + 40);
+          //     // ..arcToPoint(
+          //     //   Offset(size.width - _nipCX, size.height + 40),
+          //     //   radius: Radius.circular(nipRadius),
+          //     // );
+          // }
+
+          path2.close();
+          path = Path.combine(PathOperation.union, path, path2);
+          break;
+
+        case BubbleNip.topRight:
+          final path2 = Path()
+            ..moveTo(size.width - _startOffset - radiusX - nipOffset - nipWidth, 0)
+            ..lineTo(size.width - _startOffset - radiusX - nipOffset,  0)
+            ..lineTo(size.width - _startOffset - radiusX - nipOffset + nipTopShift, - nipHeight)
+            ..lineTo(size.width - _startOffset - radiusX - nipOffset - nipWidth, 0);
+
+          // if (nipRadius == 0) {
+          //   path2.lineTo(size.width, size.height + 80);
+          // } else {
+          //   path2
+          //     .lineTo(size.width - _nipPX, size.height + 40);
+          //     // ..arcToPoint(
+          //     //   Offset(size.width - _nipCX, size.height + 40),
+          //     //   radius: Radius.circular(nipRadius),
+          //     // );
+          // }
 
           path2.close();
           path = Path.combine(PathOperation.union, path, path2);
